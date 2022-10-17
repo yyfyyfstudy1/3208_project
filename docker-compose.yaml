@@ -1,0 +1,59 @@
+version: "3.1"
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: admin
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: 123456
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/
+    ports:
+      - 33606:33060
+      - 6033:3306
+    networks: 
+      - mynet
+
+  phpMyAdmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpMyAdmin
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: 123456
+      PMA_HOST: mysql
+    ports:
+      - 8082:80
+    networks: 
+      - mynet
+
+  php-fpm:
+    build: .
+    #image: php:7.3-fpm
+    container_name: php-fpm
+    restart: always
+    volumes:
+      - ./ci:/var/www/ci
+    networks: 
+      - mynet
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    volumes:
+      - ./ci:/var/www/ci
+      - ./conf.d:/etc/nginx/conf.d
+    ports: 
+      - 80:80
+    networks: 
+      - mynet
+
+networks: 
+  mynet:
+    driver: bridge
+
